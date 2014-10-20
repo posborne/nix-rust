@@ -14,6 +14,9 @@ pub mod ioctl;
 
 pub mod signal;
 
+#[cfg(target_os = "linux")]
+pub mod signalfd;
+
 pub mod socket;
 
 pub mod stat;
