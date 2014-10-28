@@ -13,6 +13,8 @@ extern crate libc;
 
 #[cfg(test)]
 extern crate nix_test as nixtest;
+extern crate time;
+extern crate core;
 
 // Re-export some libc constants
 pub use libc::{c_int, c_void};
@@ -147,3 +149,5 @@ impl AsExtStr for OsStr {
         self.as_bytes().as_ptr() as *const libc::c_char
     }
 }
+
+pub mod pthread;
