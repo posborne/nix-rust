@@ -2,6 +2,7 @@ use libc::{c_ulong, c_int};
 use {Result, NixPath, AsExtStr, from_ffi};
 
 bitflags!(
+    #[deriving(Copy)]
     flags MsFlags: c_ulong {
         const MS_RDONLY      = 1 << 0,  // Mount read-only
         const MS_NOSUID      = 1 << 1,  // Ignore suid and sgid bits
@@ -41,6 +42,7 @@ bitflags!(
 );
 
 bitflags!(
+    #[deriving(Copy)]
     flags MntFlags: c_int {
         const MNT_FORCE   = 1 << 0,
         const MNT_DETATCH = 1 << 1,

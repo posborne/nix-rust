@@ -19,6 +19,7 @@ mod ffi {
 }
 
 bitflags!(
+    #[deriving(Copy)]
     flags SFlag: mode_t {
         const S_IFREG  = 0o100000,
         const S_IFCHR  = 0o020000,
