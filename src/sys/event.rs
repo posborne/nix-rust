@@ -2,7 +2,7 @@
  */
 
 use libc::{timespec, time_t, c_int, c_long, uintptr_t};
-use errno::Errno;
+use errno::{Errno, SysResult, SysError};
 use fcntl::Fd;
 use std::fmt;
 use {Error, Result};
@@ -58,6 +58,7 @@ pub enum EventFilter {
 }
 
 bitflags!(
+    #[deriving(Copy)]
     flags EventFlag: u16 {
         const EV_ADD       = 0x0001,
         const EV_DELETE    = 0x0002,
@@ -110,6 +111,7 @@ impl fmt::Debug for EventFlag {
 }
 
 bitflags!(
+    #[deriving(Copy)]
     flags FilterFlag: u32 {
         const NOTE_TRIGGER                         = 0x01000000,
         const NOTE_FFNOP                           = 0x00000000,
