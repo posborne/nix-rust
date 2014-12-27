@@ -127,7 +127,6 @@ mod consts {
     use libc::c_int;
 
     bitflags!(
-        #[deriving(Copy)]
         flags OFlag: c_int {
             const O_ACCMODE   = 0o00000003,
             const O_RDONLY    = 0o00000000,
@@ -154,7 +153,6 @@ mod consts {
     );
 
     bitflags!(
-        #[deriving(Copy)]
         flags FdFlag: c_int {
             const FD_CLOEXEC = 1
         }
@@ -165,7 +163,7 @@ mod consts {
             const SFD_CLOEXEC = FD_CLOEXEC.bits,
             const SFD_NONBLOCK = O_NONBLOCK.bits
         }
-    )
+    );
 }
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
@@ -173,7 +171,6 @@ mod consts {
     use libc::c_int;
 
     bitflags!(
-        #[deriving(Copy)]
         flags OFlag: c_int {
             const O_ACCMODE   = 0x0000003,
             const O_RDONLY    = 0x0000000,
@@ -196,7 +193,6 @@ mod consts {
     );
 
     bitflags!(
-        #[deriving(Copy)]
         flags FdFlag: c_int {
             const FD_CLOEXEC = 1
         }
