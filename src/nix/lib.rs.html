@@ -184,6 +184,10 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Rust friendly bindings to the various *nix system functions.</span>
 <span class='doccomment'>//!</span>
@@ -242,6 +246,10 @@
 }
 
 <span class='kw'>impl</span> <span class='ident'>Error</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>from_errno</span>(<span class='ident'>errno</span>: <span class='ident'>errno</span>::<span class='ident'>Errno</span>) <span class='op'>-&gt;</span> <span class='ident'>Error</span> {
+        <span class='ident'>Error</span>::<span class='ident'>Sys</span>(<span class='ident'>errno</span>)
+    }
+
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>last</span>() <span class='op'>-&gt;</span> <span class='ident'>Error</span> {
         <span class='ident'>Error</span>::<span class='ident'>Sys</span>(<span class='ident'>errno</span>::<span class='ident'>Errno</span>::<span class='ident'>last</span>())
     }
