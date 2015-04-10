@@ -32,7 +32,7 @@ pub struct SigInfo {
     utime:      u64,    // user CPU time consumed (SIGCHLD)
     stime:      u64,    // system CPU time consumed (SIGCHLD)
     addr:       u64,    // address that generated hardward-generated signals
-    _pad:       [u8, ..6]
+    _pad:       [u8; ..6]
 }
 
 type SignalfdFunc = unsafe extern fn(libc::c_int, *const signal::sigset_t, libc::c_int) -> libc::c_int;

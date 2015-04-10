@@ -3,9 +3,9 @@
 
 use libc;
 use time::Timespec;
-use core::mem;
-use core::intrinsics::transmute;
-use errno::{SysError, SysResult};
+use std::mem::{self, transmute};
+use {Error, Result};
+use errno::Errno;
 use pthread::Pthread;
 
 pub use self::SigMaskHow::{SIG_BLOCK, SIG_UNBLOCK, SIG_SETMASK};
@@ -56,19 +56,19 @@ pub const SIGEMT: libc::c_int = 7;
 #[inline]
 #[allow(non_snake_case)]
 pub fn SIG_IGN() -> SigHandler {
-    unsafe { transmute(0i) }
+    unsafe { transmute(0 as usize) }
 }
 
 #[inline]
 #[allow(non_snake_case)]
 pub fn SIG_IGN_INFO() -> SigInfoHandler {
-    unsafe { transmute(0i) }
+    unsafe { transmute(0 as usize)}
 }
 
 #[inline]
 #[allow(non_snake_case)]
 pub fn SIG_DFL() -> SigHandler {
-    unsafe { transmute(1i) }
+    unsafe { transmute(1 as usize) }
 }
 
 #[cfg(any(all(target_os = "linux",
@@ -163,9 +163,9 @@ mod siginfo {
     }
 
     #[repr(C)]
-    #[deriving(Copy)]
+    #[derive(Copy, Clone)]
     pub struct SigInfo {
-        pad: [u64, ..2]
+        pad: [u64; 2]
     }
 
     impl SigInfo {
@@ -327,7 +327,7 @@ pub struct SigSet {
 }
 
 #[repr(C)]
-#[deriving(Show, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub enum SigMaskHow {
     SIG_BLOCK   = 0,
     SIG_UNBLOCK = 1,
@@ -359,11 +359,11 @@ impl SigSet {
         &mut self.sigset
     }
 
-    pub fn add(&mut self, signum: SigNum) -> SysResult<()> {
+    pub fn add(&mut self, signum: SigNum) -> Result<()> {
         let res = unsafe { ffi::sigaddset(&mut self.sigset as *mut sigset_t, signum) };
 
         if res < 0 {
-            return Err(Error::Sys(Errno::last()));
+            return Err(Error::last());
         }
 
         Ok(())
@@ -373,7 +373,7 @@ impl SigSet {
         let res = unsafe { ffi::sigdelset(&mut self.sigset as *mut sigset_t, signum) };
 
         if res < 0 {
-            return Err(Error::Sys(Errno::last()));
+            return Err(Error::last());
         }
 
         Ok(())
@@ -415,13 +415,13 @@ pub unsafe fn sigaction(signum: SigNum, sigaction: &SigAction) -> Result<SigActi
         ffi::sigaction(signum, &sigaction.sigaction as *const sigaction_t, &mut oldact as *mut sigaction_t);
 
     if res < 0 {
-        return Err(Error::Sys(Errno::last()));
+        return Err(Error::last());
     }
 
     Ok(SigAction { sigaction: oldact })
 }
 
-pub fn pthread_sigmask(how: SigMaskHow, sigset: &SigSet) -> SysResult<SigSet> {
+pub fn pthread_sigmask(how: SigMaskHow, sigset: &SigSet) -> Result<SigSet> {
     let mut oldmask = unsafe { mem::uninitialized::<sigset_t>() };
 
     let res = unsafe {
@@ -429,61 +429,61 @@ pub fn pthread_sigmask(how: SigMaskHow, sigset: &SigSet) -> SysResult<SigSet> {
     };
 
     if res < 0 {
-        return Err(SysError::last());
+        return Err(Error::last());
     }
 
     Ok(SigSet { sigset: oldmask })
 }
 
-pub fn kill(pid: libc::pid_t, signum: SigNum) -> SysResult<()> {
+pub fn kill(pid: libc::pid_t, signum: SigNum) -> Result<()> {
     let res = unsafe { ffi::kill(pid, signum) };
 
     if res < 0 {
-        return Err(Error::Sys(Errno::last()));
+        return Err(Error::last());
     }
 
     Ok(())
 }
 
-pub fn pthread_kill(thread: Pthread, sig: SigNum) -> SysResult<()> {
+pub fn pthread_kill(thread: Pthread, sig: SigNum) -> Result<()> {
     let res = unsafe { ffi::pthread_kill(thread, sig) };
 
     if res == 0 {
         Ok(())
     } else {
-        Err(SysError::from_errno(res as uint))
+        Err(Error::from_errno(Errno::from_i32(res)))
     }
 }
 
-pub fn sigwaitinfo(set: SigSet) -> SysResult<SigInfo> {
+pub fn sigwaitinfo(set: SigSet) -> Result<SigInfo> {
     let mut info = unsafe { mem::uninitialized::<SigInfo>() };
     let res = unsafe { ffi::sigwaitinfo(set.inner(), &mut info as *mut SigInfo) };
 
     if res < 0 {
-        return Err(SysError::last());
+        return Err(Error::last());
     }
 
     Ok(info)
 }
 
-pub fn sigtimedwait(set: SigSet, timeout: Timespec) -> SysResult<SigInfo> {
+pub fn sigtimedwait(set: SigSet, timeout: Timespec) -> Result<SigInfo> {
     let timespec = libc::timespec { tv_sec: timeout.sec as libc::time_t, tv_nsec: timeout.nsec as libc::c_long };
     let mut info = unsafe { mem::uninitialized::<SigInfo>() };
     let res = unsafe { ffi::sigtimedwait(set.inner(), &mut info as *mut SigInfo, &timespec as *const libc::timespec) };
 
     if res < 0 {
-        return Err(SysError::last());
+        return Err(Error::last());
     }
 
     Ok(info)
 }
 
-pub fn sigpending() -> SysResult<SigSet> {
+pub fn sigpending() -> Result<SigSet> {
     let mut set = unsafe { mem::uninitialized::<SigSet>() };
     let res = unsafe { ffi::sigpending(set.inner_mut()) };
 
     if res < 0 {
-        return Err(SysError::last());
+        return Err(Error::last());
     }
 
     Ok(set)
@@ -508,18 +508,20 @@ mod test {
 
     #[test]
     fn test_simple_signal() {
-        let mut mask = SigSet::empty();
-        mask.add(SIGQUIT).unwrap();
+        unsafe {
+            let mut mask = SigSet::empty();
+            mask.add(SIGQUIT).unwrap();
 
-        pthread_sigmask(SIG_BLOCK, &mask).unwrap();
+            pthread_sigmask(SIG_BLOCK, &mask).unwrap();
 
-        let action = SigAction::new_info(SIG_IGN_INFO(), SA_SIGINFO, SigSet::empty());
-        sigaction(SIGQUIT, &action).unwrap();
+            let action = SigAction::new_info(SIG_IGN_INFO(), SA_SIGINFO, SigSet::empty());
+            sigaction(SIGQUIT, &action).unwrap();
 
-        pthread_kill(pthread_self(), SIGQUIT).unwrap();
+            pthread_kill(pthread_self(), SIGQUIT).unwrap();
 
-        let info = sigtimedwait(mask, Timespec { sec: 0, nsec: 0 }).unwrap();
+            let info = sigtimedwait(mask, Timespec { sec: 0, nsec: 0 }).unwrap();
 
-        assert_eq!(info.signo(), SIGQUIT);
+            assert_eq!(info.signo(), SIGQUIT);
+        }
     }
 }

@@ -240,14 +240,11 @@ fn desc(errno: Errno) -> &'static str {
         #[cfg(any(target_os = "linux", target_os = "android"))]
         EBADFD          => "File descriptor in bad state",
 
-        #[cfg(target_os = "linux")]
-        ELIBACC         => "Can not access a needed shared library",
-
         #[cfg(any(target_os = "linux", target_os = "android"))]
         EREMCHG         => "Remote address changed",
 
         #[cfg(any(target_os = "linux", target_os = "android"))]
-        ELIBACC         => "Can not acces a needed shared library",
+        ELIBACC         => "Can not access a needed shared library",
 
         #[cfg(any(target_os = "linux", target_os = "android"))]
         ELIBBAD         => "Accessing a corrupted shared library",
