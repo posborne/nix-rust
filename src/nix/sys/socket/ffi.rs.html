@@ -51,6 +51,13 @@
 <span id="9"> 9</span>
 <span id="10">10</span>
 <span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>libc</span>::{<span class='ident'>c_int</span>, <span class='ident'>c_void</span>, <span class='ident'>socklen_t</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>libc</span>::{<span class='ident'>socket</span>, <span class='ident'>listen</span>, <span class='ident'>bind</span>, <span class='ident'>accept</span>, <span class='ident'>connect</span>, <span class='ident'>setsockopt</span>, <span class='ident'>sendto</span>, <span class='ident'>recvfrom</span>, <span class='ident'>getsockname</span>, <span class='ident'>getpeername</span>};
@@ -62,6 +69,13 @@
         <span class='ident'>optname</span>: <span class='ident'>c_int</span>,
         <span class='ident'>optval</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>c_void</span>,
         <span class='ident'>optlen</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>socklen_t</span>) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>socketpair</span>(
+        <span class='ident'>domain</span>:     <span class='ident'>c_int</span>,
+        <span class='ident'>typ</span>:        <span class='ident'>c_int</span>,
+        <span class='ident'>protocol</span>:   <span class='ident'>c_int</span>,
+        <span class='ident'>sv</span>:         <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>c_int</span>
+    ) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
 }
 </pre>
 </section>

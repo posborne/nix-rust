@@ -377,6 +377,40 @@
 <span id="335">335</span>
 <span id="336">336</span>
 <span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Socket interface functions</span>
 <span class='doccomment'>//!</span>
@@ -483,6 +517,40 @@
     }
 
     <span class='prelude-val'>Ok</span>(<span class='ident'>res</span>)
+}
+
+<span class='doccomment'>/// Create a pair of connected sockets</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// [Further reading](http://man7.org/linux/man-pages/man2/socketpair.2.html)</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>socketpair</span>(<span class='ident'>domain</span>: <span class='ident'>AddressFamily</span>, <span class='ident'>ty</span>: <span class='ident'>SockType</span>, <span class='ident'>protocol</span>: <span class='ident'>c_int</span>,
+                  <span class='ident'>flags</span>: <span class='ident'>SockFlag</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(<span class='ident'>Fd</span>, <span class='ident'>Fd</span>)<span class='op'>&gt;</span> {
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>ty</span> <span class='op'>=</span> <span class='ident'>ty</span> <span class='kw'>as</span> <span class='ident'>c_int</span>;
+    <span class='kw'>let</span> <span class='ident'>feat_atomic</span> <span class='op'>=</span> <span class='ident'>features</span>::<span class='ident'>socket_atomic_cloexec</span>();
+
+    <span class='kw'>if</span> <span class='ident'>feat_atomic</span> {
+        <span class='ident'>ty</span> <span class='op'>=</span> <span class='ident'>ty</span> <span class='op'>|</span> <span class='ident'>flags</span>.<span class='ident'>bits</span>();
+    }
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>fds</span> <span class='op'>=</span> [<span class='op'>-</span><span class='number'>1</span>, <span class='op'>-</span><span class='number'>1</span>];
+    <span class='kw'>let</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
+        <span class='ident'>ffi</span>::<span class='ident'>socketpair</span>(<span class='ident'>domain</span> <span class='kw'>as</span> <span class='ident'>c_int</span>, <span class='ident'>ty</span>, <span class='ident'>protocol</span>, <span class='ident'>fds</span>.<span class='ident'>as_mut_ptr</span>())
+    };
+
+    <span class='kw'>if</span> <span class='ident'>res</span> <span class='op'>&lt;</span> <span class='number'>0</span> {
+        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>Sys</span>(<span class='ident'>Errno</span>::<span class='ident'>last</span>()));
+    }
+
+    <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>feat_atomic</span> {
+        <span class='kw'>if</span> <span class='ident'>flags</span>.<span class='ident'>contains</span>(<span class='ident'>SOCK_CLOEXEC</span>) {
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>fcntl</span>(<span class='ident'>fds</span>[<span class='number'>0</span>], <span class='ident'>F_SETFD</span>(<span class='ident'>FD_CLOEXEC</span>)));
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>fcntl</span>(<span class='ident'>fds</span>[<span class='number'>1</span>], <span class='ident'>F_SETFD</span>(<span class='ident'>FD_CLOEXEC</span>)));
+        }
+
+        <span class='kw'>if</span> <span class='ident'>flags</span>.<span class='ident'>contains</span>(<span class='ident'>SOCK_NONBLOCK</span>) {
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>fcntl</span>(<span class='ident'>fds</span>[<span class='number'>0</span>], <span class='ident'>F_SETFL</span>(<span class='ident'>O_NONBLOCK</span>)));
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>fcntl</span>(<span class='ident'>fds</span>[<span class='number'>1</span>], <span class='ident'>F_SETFL</span>(<span class='ident'>O_NONBLOCK</span>)));
+        }
+    }
+    <span class='prelude-val'>Ok</span>((<span class='ident'>fds</span>[<span class='number'>0</span>], <span class='ident'>fds</span>[<span class='number'>1</span>]))
 }
 
 <span class='doccomment'>/// Listen for connections on a socket</span>
