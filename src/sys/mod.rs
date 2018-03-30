@@ -51,6 +51,7 @@ pub mod wait;
 
 pub mod mman;
 
+#[cfg(feature = "uio")]
 pub mod uio;
 
 pub mod time;
