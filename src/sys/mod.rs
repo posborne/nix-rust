@@ -4,7 +4,7 @@
               target_os = "linux",
               target_os = "macos",
               target_os = "netbsd"),
-          feature = "aio"))]
+          not(target_env = "uclibc")))]
 pub mod aio;
 
 #[cfg(any(target_os = "android", target_os = "linux"))]
@@ -51,7 +51,6 @@ pub mod wait;
 
 pub mod mman;
 
-#[cfg(feature = "uio")]
 pub mod uio;
 
 pub mod time;

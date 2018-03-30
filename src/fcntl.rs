@@ -6,7 +6,6 @@ use std::os::unix::io::RawFd;
 use std::ffi::OsStr;
 use std::os::unix::ffi::OsStrExt;
 
-#[cfg(any(target_os = "android", target_os = "linux"))]
 use sys::uio::IoVec;  // For vmsplice
 
 libc_bitflags!{
@@ -332,7 +331,7 @@ pub fn tee(fd_in: RawFd, fd_out: RawFd, len: usize, flags: SpliceFFlags) -> Resu
     Errno::result(ret).map(|r| r as usize)
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
+#[cfg(any(target_os = "android", target_os = "linux"))]
 pub fn vmsplice(fd: RawFd, iov: &[IoVec<&[u8]>], flags: SpliceFFlags) -> Result<usize> {
     let ret = unsafe {
         libc::vmsplice(fd, iov.as_ptr() as *const libc::iovec, iov.len(), flags.bits())
