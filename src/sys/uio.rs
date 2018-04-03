@@ -65,7 +65,7 @@ pub fn pread(fd: RawFd, buf: &mut [u8], offset: off_t) -> Result<usize>{
 /// therefore not represented in Rust by an actual slice as `IoVec` is. It
 /// is used with [`process_vm_readv`](fn.process_vm_readv.html)
 /// and [`process_vm_writev`](fn.process_vm_writev.html).
-#[cfg(all(target_os = "linux", feature = "uclibc-hack"))]
+#[cfg(all(target_os = "linux", not(feature = "uclibc-hack")))]
 #[repr(C)]
 pub struct RemoteIoVec {
     /// The starting address of this slice (`iov_base`).
@@ -125,7 +125,7 @@ pub fn process_vm_writev(pid: ::unistd::Pid, local_iov: &[IoVec<&[u8]>], remote_
 /// [`ptrace`]: ../ptrace/index.html
 /// [`IoVec`]: struct.IoVec.html
 /// [`RemoteIoVec`]: struct.RemoteIoVec.html
-#[cfg(all(target_os = "linux", feature = "uclibc-hack"))]
+#[cfg(all(target_os = "linux", not(feature = "uclibc-hack")))]
 pub fn process_vm_readv(pid: ::unistd::Pid, local_iov: &[IoVec<&mut [u8]>], remote_iov: &[RemoteIoVec]) -> Result<usize> {
     let res = unsafe {
         libc::process_vm_readv(pid.into(),
