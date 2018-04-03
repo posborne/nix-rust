@@ -4,7 +4,7 @@
               target_os = "linux",
               target_os = "macos",
               target_os = "netbsd"),
-          not(target_env = "uclibc")))]
+          not(feature = "uclibc-hack")))]
 pub mod aio;
 
 #[cfg(any(target_os = "android", target_os = "linux"))]

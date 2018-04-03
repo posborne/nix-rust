@@ -19,7 +19,7 @@ pub fn readv(fd: RawFd, iov: &mut [IoVec<&mut [u8]>]) -> Result<usize> {
     Errno::result(res).map(|r| r as usize)
 }
 
-#[cfg(all(target_os = "linux", feature = "uclibc-hack"))]
+#[cfg(all(target_os = "linux", not(feature = "uclibc-hack")))]
 pub fn pwritev(fd: RawFd, iov: &[IoVec<&[u8]>],
                offset: off_t) -> Result<usize> {
     let res = unsafe {
@@ -29,7 +29,7 @@ pub fn pwritev(fd: RawFd, iov: &[IoVec<&[u8]>],
     Errno::result(res).map(|r| r as usize)
 }
 
-#[cfg(all(target_os = "linux", feature = "uclibc-hack"))]
+#[cfg(all(target_os = "linux", not(feature = "uclibc-hack")))]
 pub fn preadv(fd: RawFd, iov: &mut [IoVec<&mut [u8]>],
               offset: off_t) -> Result<usize> {
     let res = unsafe {
@@ -94,7 +94,7 @@ pub struct RemoteIoVec {
 /// [ptrace]: ../ptrace/index.html
 /// [`IoVec`]: struct.IoVec.html
 /// [`RemoteIoVec`]: struct.RemoteIoVec.html
-#[cfg(all(target_os = "linux", feature = "uclibc-hack"))]
+#[cfg(all(target_os = "linux", not(feature = "uclibc-hack")))]
 pub fn process_vm_writev(pid: ::unistd::Pid, local_iov: &[IoVec<&[u8]>], remote_iov: &[RemoteIoVec]) -> Result<usize> {
     let res = unsafe {
         libc::process_vm_writev(pid.into(),
